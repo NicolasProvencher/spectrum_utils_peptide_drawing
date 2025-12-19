@@ -2,8 +2,6 @@ import re
 import matplotlib.patches as mpatches
 from matplotlib.path import Path
 from spectrum_utils.spectrum import MsmsSpectrum
-import code
-import sys
 
 def draw_peptide_annotation(
     spec: MsmsSpectrum,
@@ -46,10 +44,10 @@ def draw_peptide_annotation(
     show_ptms = draw_peptide_kws.get("show_ptms", False)
     
     # Extract sequence from proforma string
-    sequence = proforma_str.replace('-', '').split('/')[0]
+
     
     # Tokenize the sequence to handle modifications
-    tokens = _tokenize_mod_sequence(sequence, show_ptms=show_ptms)
+    tokens = _tokenize_mod_sequence(proforma_str, show_ptms=show_ptms)
     
     # Force a draw first
     ax.figure.canvas.draw()
@@ -119,16 +117,10 @@ def draw_peptide_annotation(
     b_ions = []
     y_ions = []
     
-    print(f'annotations: {annotations}')
-
     if annotations is not None:
         for peak_interp in annotations:
             if peak_interp is not None and hasattr(peak_interp, 'fragment_annotations'):
                 for frag_ann in peak_interp.fragment_annotations:
-
-                    print(f'frag_ann: {frag_ann}')
-                    print(f'frag_ann.ion_type: {dir(frag_ann)}')
-
                     if hasattr(frag_ann, 'ion_type') and frag_ann.ion_type is not None:
                         ion_type_str = frag_ann.ion_type
                         #test
@@ -152,7 +144,6 @@ def draw_peptide_annotation(
     
     # Scale linewidth based on font size
     linewidth = font_size * 0.15
-    print(f' b ions {b_ions}, \n y ions {y_ions}')
     # Draw b-ion separators (top, blue)
     for b_num in b_ions:
         if 1 <= b_num < len(tokens):
