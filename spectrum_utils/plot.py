@@ -14,11 +14,13 @@ from typing import (
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+
 import numpy as np
 
 import spectrum_utils.fragment_annotation as fa
 from spectrum_utils.spectrum import MsmsSpectrum
 from spectrum_utils.utils import da_to_ppm, ppm_to_da
+from spectrum_utils.peptide_drawing import draw_peptide_annotation
 
 
 colors = {
@@ -165,6 +167,8 @@ def spectrum(
         annotate_ion_type, ion_types="by"
     ),
     annot_kws: Optional[Dict] = None,
+    draw_peptide: Optional[bool] = False,
+    draw_peptide_kws: Optional[Dict] = None,
     mirror_intensity: bool = False,
     grid: Union[bool, str] = True,
     ax: Optional[plt.Axes] = None,
@@ -185,6 +189,10 @@ def spectrum(
         are annotated. If `None`, no peaks are annotated.
     annot_kws : Optional[Dict], optional
         Keyword arguments for `ax.text` to customize peak annotations.
+    raw_peptide : bool, optional
+        Flag indicating whether to draw the peptide sequence with ion annotations.
+    draw_peptide_kws : Optional[Dict], optional
+        Keyword arguments to customize peptide drawing.
     mirror_intensity : bool, optional
         Flag indicating whether to flip the intensity axis or not.
     grid : Union[bool, str], optional
@@ -228,6 +236,18 @@ def spectrum(
     }
     if annot_kws is not None:
         annotation_kws.update(annot_kws)
+    
+
+    # setting for the draw_peptide_annotation() fonction
+    # will probably need to be modified to adapt the drawing implementation to more than the basic spectrum 
+    if draw_peptide:
+        peptide_kws = {
+            "font_size": 12,
+            "show_ptms": False,
+        }
+        if draw_peptide_kws is not None:
+            peptide_kws.update(draw_peptide_kws)
+
     for mz, intensity, annotation in zip(spec.mz, spec.intensity, annotations):
         peak_intensity = intensity / max_intensity
         if mirror_intensity:
@@ -244,6 +264,9 @@ def spectrum(
             ax,
         )
         ax.plot([mz, mz], [0, peak_intensity], color=color, zorder=zorder)
+    if draw_peptide:
+        if hasattr(spec, "proforma") and spec.proforma is not None:
+            draw_peptide_annotation(spec, peptide_kws, ax)
 
     return ax
 
@@ -506,3 +529,4 @@ def facet(
     fig.tight_layout()
 
     return fig
+
